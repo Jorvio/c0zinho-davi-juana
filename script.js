@@ -1,134 +1,84 @@
-(() => {
-  const no = document.getElementById("no");
-  const yes = document.getElementById("yes");
-  const hint = document.getElementById("hint");
+const noButton = document.getElementById('no');
+const buttons = document.querySelector('.buttons');
+const yesButton = document.getElementById('yes');
 
-  if (!no) return;
+let fleeing = false;
+let timer = null;
 
-  // O botão nunca recebe o mouse. O document observa o cursor.
-  no.style.pointerEvents = "none";
-  no.style.position = "fixed";
+function placeNoBesideYes() {
+  // Volta o NÃO para o fluxo normal e deixa os dois botões centralizados como no print.
+  noButton.classList.remove('runaway', 'is-hidden');
+  noButton.style.left = '';
+  noButton.style.top = '';
+  noButton.style.transform = '';
+}
 
-  const DISTANCIA_FUGA = 190;
-  const MARGEM = 24;
-  let mouseX = -9999;
-  let mouseY = -9999;
-  let mudando = false;
+function randomPositionAwayFromPointer(mouseX, mouseY) {
+  const rect = noButton.getBoundingClientRect();
+  const margin = 28;
+  const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+  const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
 
-  function limite(v, min, max) {
-    return Math.max(min, Math.min(max, v));
-  }
+  // Tenta vários pontos e escolhe um que fique bem longe do cursor.
+  let best = null;
+  let bestDistance = -1;
 
-  function tamanho() {
-    const r = no.getBoundingClientRect();
-    return { w: r.width || 122, h: r.height || 48 };
-  }
+  for (let i = 0; i < 120; i++) {
+    const x = margin + Math.random() * (maxX - margin);
+    const y = margin + Math.random() * (maxY - margin);
+    const cx = x + rect.width / 2;
+    const cy = y + rect.height / 2;
+    const distance = Math.hypot(cx - mouseX, cy - mouseY);
 
-  function distanciaDoMouse(x, y, w, h) {
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    return Math.hypot(cx - mouseX, cy - mouseY);
-  }
-
-  function novaPosicao() {
-    const { w, h } = tamanho();
-    const maxX = Math.max(MARGEM, window.innerWidth - w - MARGEM);
-    const maxY = Math.max(MARGEM, window.innerHeight - h - MARGEM);
-
-    let melhor = null;
-
-    // Tenta várias posições e escolhe uma bem longe do cursor.
-    for (let i = 0; i < 80; i++) {
-      const x = MARGEM + Math.random() * Math.max(1, maxX - MARGEM);
-      const y = MARGEM + Math.random() * Math.max(1, maxY - MARGEM);
-      const d = distanciaDoMouse(x, y, w, h);
-
-      if (!melhor || d > melhor.d) {
-        melhor = { x, y, d };
-      }
-
-      if (d >= DISTANCIA_FUGA * 1.8) break;
-    }
-
-    return melhor || { x: MARGEM, y: MARGEM };
-  }
-
-  function fugir() {
-    if (mudando) return;
-
-    const r = no.getBoundingClientRect();
-    const centroX = r.left + r.width / 2;
-    const centroY = r.top + r.height / 2;
-    const distancia = Math.hypot(centroX - mouseX, centroY - mouseY);
-
-    if (distancia > DISTANCIA_FUGA) return;
-
-    mudando = true;
-
-    // Some primeiro...
-    no.style.opacity = "0";
-
-    setTimeout(() => {
-      const pos = novaPosicao();
-      no.style.left = `${pos.x}px`;
-      no.style.top = `${pos.y}px`;
-
-      // ...e aparece em outro lugar da tela.
-      requestAnimationFrame(() => {
-        no.style.opacity = "1";
-        mudando = false;
-      });
-    }, 90);
-
-    if (hint) {
-      hint.textContent = "ih, quase! 😭";
-      clearTimeout(hint._timer);
-      hint._timer = setTimeout(() => {
-        hint.textContent = "escolha com carinho ♡";
-      }, 900);
+    if (distance > bestDistance) {
+      bestDistance = distance;
+      best = { x, y };
     }
   }
 
-  function posicionarInicialmente() {
-    const { w, h } = tamanho();
-    const sim = yes?.getBoundingClientRect();
-    const area = document.querySelector(".buttons")?.getBoundingClientRect();
+  return best;
+}
 
-    // O conjunto dos dois botões fica centralizado no card.
-    // O NÃO começa dentro dessa mesma área, ao lado do SIM.
-    let x = area && sim ? area.left + 140 : (sim ? sim.right + 18 : window.innerWidth / 2 + 20);
-    let y = area ? area.top + (area.height - h) / 2 : (sim ? sim.top + (sim.height - h) / 2 : window.innerHeight / 2);
+function flee(mouseX, mouseY) {
+  if (fleeing) return;
+  fleeing = true;
 
-    x = limite(x, MARGEM, Math.max(MARGEM, window.innerWidth - w - MARGEM));
-    y = limite(y, MARGEM, Math.max(MARGEM, window.innerHeight - h - MARGEM));
+  // Primeiro some de verdade.
+  noButton.classList.add('runaway', 'is-hidden');
 
-    no.style.left = `${x}px`;
-    no.style.top = `${y}px`;
-    no.style.opacity = "1";
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    const position = randomPositionAwayFromPointer(mouseX, mouseY);
+
+    noButton.style.left = `${position.x}px`;
+    noButton.style.top = `${position.y}px`;
+    noButton.style.transform = 'none';
+    noButton.classList.remove('is-hidden');
+
+    // Depois de reaparecer, volta a poder fugir normalmente.
+    fleeing = false;
+  }, 180);
+}
+
+document.addEventListener('pointermove', (event) => {
+  if (fleeing) return;
+
+  const rect = noButton.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+
+  // Área de fuga generosa: a pessoa não precisa encostar no botão.
+  if (distance < 105) {
+    flee(event.clientX, event.clientY);
   }
+});
 
-  function moverMouse(event) {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-    fugir();
+window.addEventListener('resize', () => {
+  if (!noButton.classList.contains('runaway')) {
+    placeNoBesideYes();
   }
+});
 
-  document.addEventListener("pointermove", moverMouse, { passive: true });
-  document.addEventListener("mousemove", moverMouse, { passive: true });
-
-  window.addEventListener("resize", () => {
-    const { w, h } = tamanho();
-    const r = no.getBoundingClientRect();
-    no.style.left = `${limite(r.left, MARGEM, Math.max(MARGEM, window.innerWidth - w - MARGEM))}px`;
-    no.style.top = `${limite(r.top, MARGEM, Math.max(MARGEM, window.innerHeight - h - MARGEM))}px`;
-  });
-
-  if (yes) {
-    yes.addEventListener("click", () => {
-      if (hint) hint.textContent = "eu sabia 😏♡";
-    });
-  }
-
-  window.addEventListener("load", posicionarInicialmente);
-  requestAnimationFrame(posicionarInicialmente);
-})();
+// Garante a posição inicial exatamente no conjunto centralizado.
+placeNoBesideYes();

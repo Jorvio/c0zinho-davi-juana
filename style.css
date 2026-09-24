@@ -1,170 +1,161 @@
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html, body {
-  width: 100%;
-  min-height: 100%;
-}
+html, body { width: 100%; min-height: 100%; margin: 0; }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  font-family: Georgia, "Times New Roman", serif;
+  overflow-x: hidden;
   background:
-    radial-gradient(circle at 20% 15%, rgba(255,255,255,.85), transparent 32%),
-    radial-gradient(circle at 80% 85%, rgba(255,190,213,.35), transparent 35%),
-    linear-gradient(135deg, #f9dce8 0%, #f6cbdc 48%, #f8dfe8 100%);
-  color: #4b3940;
-  overflow: hidden;
+    radial-gradient(circle at 18% 20%, rgba(255,255,255,.72) 0, rgba(255,255,255,0) 34%),
+    radial-gradient(circle at 84% 76%, rgba(255,255,255,.22) 0, rgba(255,255,255,0) 30%),
+    linear-gradient(135deg, #fceff5 0%, #f7cddd 48%, #f5c2d5 100%);
+  color: #57404b;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .page {
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
 }
 
 .card {
-  width: min(680px, calc(100vw - 48px));
-  min-height: 470px;
-  padding: 64px 42px 42px;
-  border-radius: 34px;
-  background: rgba(255, 255, 255, .93);
-  box-shadow:
-    0 30px 80px rgba(112, 61, 82, .15),
-    0 8px 24px rgba(112, 61, 82, .08);
+  width: min(670px, calc(100vw - 48px));
+  min-height: 508px;
+  padding: 62px 55px 38px;
+  border-radius: 32px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 25px 60px rgba(170, 93, 123, .18);
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .eyebrow {
-  font-family: Arial, sans-serif;
+  margin: 0;
+  color: #d47b9c;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .23em;
-  color: #c77b99;
-  margin-bottom: 15px;
+  font-weight: 600;
+  letter-spacing: 4px;
 }
 
 .heart {
+  margin-top: 18px;
+  color: #d47b9c;
   font-family: Georgia, serif;
-  font-size: 36px;
+  font-size: 34px;
   line-height: 1;
-  color: #d28aa5;
-  margin-bottom: 18px;
 }
 
 h1 {
-  margin: 0;
-  color: #4d3a42;
-  font-size: clamp(52px, 8vw, 78px);
+  margin: 23px 0 0;
+  color: #4e3944;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(68px, 7vw, 84px);
   font-weight: 400;
   line-height: .9;
-  letter-spacing: -.045em;
+  letter-spacing: -2px;
 }
 
-h1 span {
-  display: block;
-  margin-top: 8px;
-  font-family: "Brush Script MT", "Segoe Script", cursive;
-  font-size: .78em;
-  color: #cc7898;
-  font-style: italic;
-  letter-spacing: 0;
+.today {
+  margin-top: 10px;
+  color: #cf7096;
+  font-family: 'Pacifico', cursive;
+  font-size: 48px;
+  line-height: 1;
+  transform: rotate(-4deg);
 }
 
-.subtitle {
-  margin: 26px auto 30px;
-  color: #8b6d78;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-  line-height: 1.7;
+.description {
+  margin: 34px 0 0;
+  color: #8b6372;
+  font-size: 12px;
+  line-height: 1.8;
 }
 
+.buttons-area {
+  width: 100%;
+  margin-top: 35px;
+  display: flex;
+  justify-content: center;
+}
+
+/* O conjunto dos dois botões fica SEMPRE centralizado */
 .buttons {
   position: relative;
-  width: 280px;
-  height: 54px;
-  margin: 0 auto;
+  width: 260px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
 }
 
-button {
-  border: 0;
-  font: inherit;
-  cursor: pointer;
-}
-
-.yes,
-.no {
-  min-width: 122px;
+.btn {
+  width: 122px;
   height: 48px;
-  padding: 0 25px;
-  border-radius: 999px;
-  font-family: Arial, sans-serif;
+  border-radius: 28px;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .16em;
-}
-
-.yes {
-  background: #d47f9e;
-  color: white;
-  box-shadow: 0 10px 22px rgba(196, 104, 139, .25);
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
   transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.yes:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 13px 28px rgba(196, 104, 139, .3);
+.yes {
+  border: 1px solid #d77d9e;
+  background: #d77d9e;
+  color: white;
+  box-shadow: 0 12px 25px rgba(191, 100, 139, .22);
 }
 
-.yes span {
-  margin-left: 6px;
+.yes span { margin-left: 7px; }
+
+.yes:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 28px rgba(191, 100, 139, .28);
+}
+
+.no {
+  border: 1px solid #e08bad;
+  background: #fff;
+  color: #cf7096;
 }
 
 .hint {
-  margin-top: 25px;
-  font-family: Arial, sans-serif;
+  margin: 30px 0 0;
+  color: #c37a96;
   font-size: 11px;
-  color: #b18c9b;
-  letter-spacing: .04em;
 }
 
-/* O NÃO fica fora do card. Assim nenhum overflow/backdrop-filter do card consegue cortá-lo. */
-.runaway-no {
-  position: fixed !important;
-  left: 50vw;
-  top: 50vh;
-  transform: none;
-  z-index: 2147483647 !important;
-
-  pointer-events: none !important;
-  user-select: none;
-  white-space: nowrap;
-  margin: 0 !important;
-
-  background: transparent;
-  color: #c77b99;
-  border: 1.5px solid #d99ab2;
-  box-shadow: none;
-
-  will-change: left, top, transform;
-  transition: opacity .08s ease;
+/* O NÃO vira fixed somente quando fugir, para poder reaparecer em qualquer ponto da tela. */
+.no.runaway {
+  position: fixed;
+  z-index: 99999;
+  margin: 0;
+  transition: none;
 }
 
+.no.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
+  .page { padding: 22px 14px; }
   .card {
-    min-height: 440px;
-    padding: 48px 25px 35px;
+    width: calc(100vw - 28px);
+    min-height: 500px;
+    padding: 48px 24px 34px;
+    border-radius: 28px;
   }
-
-  .runaway-no {
-    min-width: 108px;
-    height: 44px;
-    padding: 0 20px;
-  }
+  .buttons { width: 260px; gap: 12px; }
+  .btn { width: 118px; }
+  h1 { font-size: 66px; }
+  .today { font-size: 42px; }
 }
