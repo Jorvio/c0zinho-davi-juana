@@ -152,14 +152,9 @@ button {
   box-shadow: none;
 
   will-change: left, top, transform;
-  transition:
-    left .10s cubic-bezier(.2,.8,.2,1),
-    top .10s cubic-bezier(.2,.8,.2,1);
+  transition: opacity .08s ease;
 }
 
-.runaway-no.is-moving {
-  transition-duration: .055s;
-}
 
 @media (max-width: 600px) {
   .card {

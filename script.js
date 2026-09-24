@@ -5,148 +5,80 @@
 
   if (!no) return;
 
-  // O botão NÃO é um elemento visual בלבד: ele não recebe pointer events.
-  // O mouse é acompanhado pelo document, então não existe "perder o evento"
-  // quando o cursor chega perto do botão.
+  // O botão nunca recebe o mouse. O document observa o cursor.
   no.style.pointerEvents = "none";
+  no.style.position = "fixed";
 
-  const REPEL_RADIUS = 235;
-  const SAFE_DISTANCE = 205;
-  const EDGE = 18;
-  const MAX_SAMPLES = 100;
-
+  const DISTANCIA_FUGA = 190;
+  const MARGEM = 24;
   let mouseX = -9999;
   let mouseY = -9999;
-  let initialized = false;
-  let currentX = 0;
-  let currentY = 0;
-  let targetX = 0;
-  let targetY = 0;
-  let raf = 0;
+  let mudando = false;
 
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
+  function limite(v, min, max) {
+    return Math.max(min, Math.min(max, v));
   }
 
-  function buttonSize() {
+  function tamanho() {
     const r = no.getBoundingClientRect();
-    return {
-      w: Math.max(r.width, 1),
-      h: Math.max(r.height, 1)
-    };
+    return { w: r.width || 122, h: r.height || 48 };
   }
 
-  function place(x, y, animate = true) {
-    const { w, h } = buttonSize();
-    const maxX = Math.max(EDGE, window.innerWidth - w - EDGE);
-    const maxY = Math.max(EDGE, window.innerHeight - h - EDGE);
-
-    targetX = clamp(x, EDGE, maxX);
-    targetY = clamp(y, EDGE, maxY);
-
-    if (!animate) {
-      currentX = targetX;
-      currentY = targetY;
-      no.style.left = `${currentX}px`;
-      no.style.top = `${currentY}px`;
-      return;
-    }
-
-    no.classList.add("is-moving");
+  function distanciaDoMouse(x, y, w, h) {
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    return Math.hypot(cx - mouseX, cy - mouseY);
   }
 
-  function center() {
-    const r = no.getBoundingClientRect();
-    return {
-      x: r.left + r.width / 2,
-      y: r.top + r.height / 2,
-      w: r.width,
-      h: r.height
-    };
-  }
+  function novaPosicao() {
+    const { w, h } = tamanho();
+    const maxX = Math.max(MARGEM, window.innerWidth - w - MARGEM);
+    const maxY = Math.max(MARGEM, window.innerHeight - h - MARGEM);
 
-  function candidateIsBetter(x, y, bestX, bestY, bestDistance) {
-    const c = center();
-    const d = Math.hypot((x + c.w / 2) - mouseX, (y + c.h / 2) - mouseY);
-    return d > bestDistance ? { x, y, d } : { x: bestX, y: bestY, d: bestDistance };
-  }
+    let melhor = null;
 
-  function flee() {
-    const c = center();
-    const dx = c.x - mouseX;
-    const dy = c.y - mouseY;
-    const distance = Math.hypot(dx, dy);
+    // Tenta várias posições e escolhe uma bem longe do cursor.
+    for (let i = 0; i < 80; i++) {
+      const x = MARGEM + Math.random() * Math.max(1, maxX - MARGEM);
+      const y = MARGEM + Math.random() * Math.max(1, maxY - MARGEM);
+      const d = distanciaDoMouse(x, y, w, h);
 
-    if (distance > REPEL_RADIUS) return;
-
-    // Direção principal: exatamente para o lado oposto do cursor.
-    let ux;
-    let uy;
-
-    if (distance < 1) {
-      const angle = Math.random() * Math.PI * 2;
-      ux = Math.cos(angle);
-      uy = Math.sin(angle);
-    } else {
-      ux = dx / distance;
-      uy = dy / distance;
-    }
-
-    const strength = Math.max(80, SAFE_DISTANCE + (REPEL_RADIUS - distance) * 1.45);
-
-    const directX = c.x + ux * strength;
-    const directY = c.y + uy * strength;
-
-    // Converte centro -> canto superior esquerdo.
-    const directLeft = directX - c.w / 2;
-    const directTop = directY - c.h / 2;
-
-    const maxX = Math.max(EDGE, window.innerWidth - c.w - EDGE);
-    const maxY = Math.max(EDGE, window.innerHeight - c.h - EDGE);
-
-    const clampedX = clamp(directLeft, EDGE, maxX);
-    const clampedY = clamp(directTop, EDGE, maxY);
-
-    const directCenterX = clampedX + c.w / 2;
-    const directCenterY = clampedY + c.h / 2;
-    const directDistance = Math.hypot(directCenterX - mouseX, directCenterY - mouseY);
-
-    // Se a fuga direta bater na borda, procura a posição mais distante
-    // entre vários pontos seguros do viewport.
-    let best = {
-      x: clampedX,
-      y: clampedY,
-      d: directDistance
-    };
-
-    if (directDistance < SAFE_DISTANCE) {
-      const positions = [
-        [EDGE, EDGE],
-        [maxX, EDGE],
-        [EDGE, maxY],
-        [maxX, maxY],
-        [maxX / 2, EDGE],
-        [maxX / 2, maxY],
-        [EDGE, maxY / 2],
-        [maxX, maxY / 2],
-        [maxX * .18, maxY * .18],
-        [maxX * .82, maxY * .18],
-        [maxX * .18, maxY * .82],
-        [maxX * .82, maxY * .82]
-      ];
-
-      for (const [x, y] of positions) {
-        best = candidateIsBetter(x, y, best.x, best.y, best.d);
+      if (!melhor || d > melhor.d) {
+        melhor = { x, y, d };
       }
 
-      for (let i = 0; i < MAX_SAMPLES; i++) {
-        const x = EDGE + Math.random() * Math.max(1, maxX - EDGE);
-        const y = EDGE + Math.random() * Math.max(1, maxY - EDGE);
-        best = candidateIsBetter(x, y, best.x, best.y, best.d);
-      }
+      if (d >= DISTANCIA_FUGA * 1.8) break;
     }
 
-    place(best.x, best.y);
+    return melhor || { x: MARGEM, y: MARGEM };
+  }
+
+  function fugir() {
+    if (mudando) return;
+
+    const r = no.getBoundingClientRect();
+    const centroX = r.left + r.width / 2;
+    const centroY = r.top + r.height / 2;
+    const distancia = Math.hypot(centroX - mouseX, centroY - mouseY);
+
+    if (distancia > DISTANCIA_FUGA) return;
+
+    mudando = true;
+
+    // Some primeiro...
+    no.style.opacity = "0";
+
+    setTimeout(() => {
+      const pos = novaPosicao();
+      no.style.left = `${pos.x}px`;
+      no.style.top = `${pos.y}px`;
+
+      // ...e aparece em outro lugar da tela.
+      requestAnimationFrame(() => {
+        no.style.opacity = "1";
+        mudando = false;
+      });
+    }, 90);
 
     if (hint) {
       hint.textContent = "ih, quase! 😭";
@@ -157,94 +89,43 @@
     }
   }
 
-  function animate() {
-    const ease = 0.32;
+  function posicionarInicialmente() {
+    const { w, h } = tamanho();
+    const sim = yes?.getBoundingClientRect();
 
-    currentX += (targetX - currentX) * ease;
-    currentY += (targetY - currentY) * ease;
+    let x = sim ? sim.right + 18 : window.innerWidth / 2 + 20;
+    let y = sim ? sim.top + (sim.height - h) / 2 : window.innerHeight / 2;
 
-    no.style.left = `${currentX}px`;
-    no.style.top = `${currentY}px`;
+    x = limite(x, MARGEM, Math.max(MARGEM, window.innerWidth - w - MARGEM));
+    y = limite(y, MARGEM, Math.max(MARGEM, window.innerHeight - h - MARGEM));
 
-    // Continua verificando enquanto o cursor estiver perto.
-    const c = center();
-    const distance = Math.hypot(c.x - mouseX, c.y - mouseY);
-
-    if (distance < REPEL_RADIUS + 30) {
-      flee();
-    }
-
-    raf = requestAnimationFrame(animate);
+    no.style.left = `${x}px`;
+    no.style.top = `${y}px`;
+    no.style.opacity = "1";
   }
 
-  function initialize() {
-    if (initialized) return;
-    initialized = true;
-
-    const yesRect = yes ? yes.getBoundingClientRect() : null;
-    const size = buttonSize();
-
-    // Coloca o NÃO inicialmente ao lado do SIM, como no layout original.
-    let x;
-    let y;
-
-    if (yesRect) {
-      x = yesRect.right + 18;
-      y = yesRect.top + (yesRect.height - size.h) / 2;
-    } else {
-      x = window.innerWidth / 2 - size.w / 2;
-      y = window.innerHeight / 2 - size.h / 2;
-    }
-
-    const maxX = Math.max(EDGE, window.innerWidth - size.w - EDGE);
-    const maxY = Math.max(EDGE, window.innerHeight - size.h - EDGE);
-
-    x = clamp(x, EDGE, maxX);
-    y = clamp(y, EDGE, maxY);
-
-    place(x, y, false);
-
-    // Remove a transição durante a inicialização.
-    no.style.transition = "none";
-    requestAnimationFrame(() => {
-      no.style.transition = "";
-    });
-
-    if (!raf) raf = requestAnimationFrame(animate);
-  }
-
-  function updatePointer(event) {
+  function moverMouse(event) {
     mouseX = event.clientX;
     mouseY = event.clientY;
-
-    if (!initialized) initialize();
-
-    // Fuga imediata, além do loop contínuo.
-    flee();
+    fugir();
   }
 
-  document.addEventListener("pointermove", updatePointer, { passive: true });
-  document.addEventListener("mousemove", updatePointer, { passive: true });
+  document.addEventListener("pointermove", moverMouse, { passive: true });
+  document.addEventListener("mousemove", moverMouse, { passive: true });
 
   window.addEventListener("resize", () => {
-    if (!initialized) return;
-
-    const c = center();
-    const { w, h } = buttonSize();
-    const maxX = Math.max(EDGE, window.innerWidth - w - EDGE);
-    const maxY = Math.max(EDGE, window.innerHeight - h - EDGE);
-
-    place(clamp(c.x - w / 2, EDGE, maxX), clamp(c.y - h / 2, EDGE, maxY), false);
+    const { w, h } = tamanho();
+    const r = no.getBoundingClientRect();
+    no.style.left = `${limite(r.left, MARGEM, Math.max(MARGEM, window.innerWidth - w - MARGEM))}px`;
+    no.style.top = `${limite(r.top, MARGEM, Math.max(MARGEM, window.innerHeight - h - MARGEM))}px`;
   });
 
-  // SIM continua funcionando normalmente.
   if (yes) {
     yes.addEventListener("click", () => {
       if (hint) hint.textContent = "eu sabia 😏♡";
     });
   }
 
-  // Inicializa mesmo antes do primeiro movimento.
-  window.addEventListener("load", initialize);
-  requestAnimationFrame(initialize);
+  window.addEventListener("load", posicionarInicialmente);
+  requestAnimationFrame(posicionarInicialmente);
 })();
