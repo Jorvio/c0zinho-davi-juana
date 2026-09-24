@@ -92,9 +92,12 @@
   function posicionarInicialmente() {
     const { w, h } = tamanho();
     const sim = yes?.getBoundingClientRect();
+    const area = document.querySelector(".buttons")?.getBoundingClientRect();
 
-    let x = sim ? sim.right + 18 : window.innerWidth / 2 + 20;
-    let y = sim ? sim.top + (sim.height - h) / 2 : window.innerHeight / 2;
+    // O conjunto dos dois botões fica centralizado no card.
+    // O NÃO começa dentro dessa mesma área, ao lado do SIM.
+    let x = area && sim ? area.left + 140 : (sim ? sim.right + 18 : window.innerWidth / 2 + 20);
+    let y = area ? area.top + (area.height - h) / 2 : (sim ? sim.top + (sim.height - h) / 2 : window.innerHeight / 2);
 
     x = limite(x, MARGEM, Math.max(MARGEM, window.innerWidth - w - MARGEM));
     y = limite(y, MARGEM, Math.max(MARGEM, window.innerHeight - h - MARGEM));

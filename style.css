@@ -85,10 +85,10 @@ h1 span {
 }
 
 .buttons {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 54px;
+  position: relative;
+  width: 280px;
+  height: 54px;
+  margin: 0 auto;
 }
 
 button {
