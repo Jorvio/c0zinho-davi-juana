@@ -3,86 +3,117 @@ const yesBtn = document.getElementById("yes");
 const hint = document.getElementById("hint");
 const success = document.getElementById("success");
 
+let mouse = { x: -9999, y: -9999 };
+let lastMove = 0;
 let attempts = 0;
-let moving = false;
 
-function runAway(event) {
+const ESCAPE_RADIUS = 155;   // distância mínima do cursor
+const MIN_POSITION = 30;
+
+document.addEventListener("mousemove", (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  keepAway();
+});
+
+document.addEventListener("pointermove", (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  keepAway();
+});
+
+function keepAway() {
+  if (success.classList.contains("show")) return;
+
+  const rect = noBtn.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const distance = Math.hypot(mouse.x - cx, mouse.y - cy);
+
+  // O cursor não consegue sequer chegar perto do botão.
+  if (distance < ESCAPE_RADIUS) {
+    moveButtonAway();
+  }
+}
+
+function moveButtonAway() {
+  const now = performance.now();
+
+  // Evita várias mudanças no mesmo frame.
+  if (now - lastMove < 90) return;
+  lastMove = now;
+
   attempts++;
 
-  const margin = 24;
-  const buttonWidth = noBtn.offsetWidth || 100;
-  const buttonHeight = noBtn.offsetHeight || 54;
+  const width = noBtn.offsetWidth;
+  const height = noBtn.offsetHeight;
 
-  // Use the actual browser viewport, not the card.
-  const maxLeft = window.innerWidth - buttonWidth - margin;
-  const maxTop = window.innerHeight - buttonHeight - margin;
+  const maxX = window.innerWidth - width - MIN_POSITION;
+  const maxY = window.innerHeight - height - MIN_POSITION;
 
-  const mouseX = event.clientX;
-  const mouseY = event.clientY;
+  let bestX = MIN_POSITION;
+  let bestY = MIN_POSITION;
+  let bestDistance = 0;
 
-  // Pick a visible position that is genuinely far from the mouse.
-  let left, top, distance;
-  let tries = 0;
+  // Procura a posição mais distante possível do mouse.
+  for (let i = 0; i < 80; i++) {
+    const x = MIN_POSITION + Math.random() * Math.max(1, maxX - MIN_POSITION);
+    const y = MIN_POSITION + Math.random() * Math.max(1, maxY - MIN_POSITION);
 
-  do {
-    left = margin + Math.random() * Math.max(1, maxLeft - margin);
-    top = margin + Math.random() * Math.max(1, maxTop - margin);
+    const d = Math.hypot(
+      mouse.x - (x + width / 2),
+      mouse.y - (y + height / 2)
+    );
 
-    const centerX = left + buttonWidth / 2;
-    const centerY = top + buttonHeight / 2;
-    distance = Math.hypot(centerX - mouseX, centerY - mouseY);
-    tries++;
-  } while (distance < 180 && tries < 100);
+    if (d > bestDistance) {
+      bestDistance = d;
+      bestX = x;
+      bestY = y;
+    }
 
-  // FIXED means it stays visible in the browser viewport.
-  noBtn.style.position = "fixed";
-  noBtn.style.left = `${left}px`;
-  noBtn.style.top = `${top}px`;
-  noBtn.style.right = "auto";
-  noBtn.style.bottom = "auto";
-  noBtn.style.margin = "0";
-  noBtn.style.zIndex = "99999";
-  noBtn.style.transform =
-    `rotate(${(Math.random() - 0.5) * 14}deg) scale(1.02)`;
+    // Se já achou uma posição muito segura, pode parar.
+    if (d > ESCAPE_RADIUS + 180) break;
+  }
+
+  // FIXED + !important no CSS garante que o botão não seja cortado
+  // pelo cartão nem desapareça por causa do layout.
+  noBtn.style.setProperty("position", "fixed", "important");
+  noBtn.style.setProperty("left", `${bestX}px`, "important");
+  noBtn.style.setProperty("top", `${bestY}px`, "important");
+  noBtn.style.setProperty("right", "auto", "important");
+  noBtn.style.setProperty("bottom", "auto", "important");
+  noBtn.style.setProperty("z-index", "999999", "important");
+
+  const rotation = (Math.random() - 0.5) * 10;
+  noBtn.style.transform = `rotate(${rotation}deg)`;
 
   const messages = [
     "ih, quase! 😭",
-    "não vai conseguir KKKK",
-    "FOI POR POUCO 👀",
-    "ele fugiu!",
-    "para de perseguir o NÃO 😭",
-    "desiste, eu sou mais rápido ♡",
-    "NÃO É PRA CLICAR NO NÃO KKKK"
+    "nem chegou perto KKKK",
+    "o NÃO fugiu!",
+    "tenta de novo 👀",
+    "não encosta em mim 😭",
+    "você não vai conseguir ♡",
+    "esse botão é impossível KKKK"
   ];
 
   hint.textContent = messages[Math.min(attempts - 1, messages.length - 1)];
-
-  moving = true;
-  setTimeout(() => {
-    moving = false;
-  }, 220);
 }
 
-// The first approach makes it run.
-noBtn.addEventListener("mouseenter", runAway);
-
-// If the cursor follows it closely, make it run again.
-document.addEventListener("mousemove", (event) => {
-  if (noBtn.style.position !== "fixed" || moving) return;
-
-  const r = noBtn.getBoundingClientRect();
-  const centerX = r.left + r.width / 2;
-  const centerY = r.top + r.height / 2;
-
-  if (Math.hypot(event.clientX - centerX, event.clientY - centerY) < 105) {
-    runAway(event);
-  }
+// Também impede qualquer tentativa de clique/toque.
+noBtn.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  moveButtonAway();
 });
 
-// Never allow a click/touch to land on it.
-noBtn.addEventListener("pointerdown", (event) => {
-  event.preventDefault();
-  runAway(event);
+noBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  moveButtonAway();
+});
+
+// Se a janela mudar de tamanho, reposiciona o botão.
+window.addEventListener("resize", () => {
+  moveButtonAway();
 });
 
 yesBtn.addEventListener("click", () => {
@@ -100,6 +131,14 @@ function createHeart() {
   el.style.left = `${Math.random() * 100}vw`;
   el.style.bottom = "-30px";
   el.style.fontSize = `${16 + Math.random() * 25}px`;
+
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 8000);
 }
+
+// Coloca o NÃO inicialmente em uma posição confortável,
+// mas já sob controle do sistema de "repulsão".
+window.addEventListener("load", () => {
+  noBtn.style.setProperty("position", "fixed", "important");
+  noBtn.style.setProperty("z-index", "999999", "important");
+});

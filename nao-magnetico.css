@@ -1,0 +1,12 @@
+
+/* Botão NÃO: comportamento de "ímã repelindo o cursor" */
+#no {
+  position: fixed !important;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+  transition:
+    left 0.16s cubic-bezier(.2,.85,.2,1),
+    top 0.16s cubic-bezier(.2,.85,.2,1),
+    transform 0.16s ease !important;
+  will-change: left, top, transform;
+}
