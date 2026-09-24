@@ -3,93 +3,86 @@ const yesBtn = document.getElementById("yes");
 const hint = document.getElementById("hint");
 const success = document.getElementById("success");
 
-let tries = 0;
-let fleeing = false;
+let attempts = 0;
+let moving = false;
 
-function moveAwayFromPointer(event) {
-  tries++;
+function runAway(event) {
+  attempts++;
 
-  const btn = noBtn.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const padding = 18;
+  const margin = 24;
+  const buttonWidth = noBtn.offsetWidth || 100;
+  const buttonHeight = noBtn.offsetHeight || 54;
 
-  // Pointer position. mouseenter gives clientX/clientY.
-  const px = event.clientX;
-  const py = event.clientY;
+  // Use the actual browser viewport, not the card.
+  const maxLeft = window.innerWidth - buttonWidth - margin;
+  const maxTop = window.innerHeight - buttonHeight - margin;
 
-  // Current center of the button.
-  const bx = btn.left + btn.width / 2;
-  const by = btn.top + btn.height / 2;
+  const mouseX = event.clientX;
+  const mouseY = event.clientY;
 
-  // Direction from cursor -> button.
-  let dx = bx - px;
-  let dy = by - py;
-  const distance = Math.hypot(dx, dy) || 1;
+  // Pick a visible position that is genuinely far from the mouse.
+  let left, top, distance;
+  let tries = 0;
 
-  dx /= distance;
-  dy /= distance;
+  do {
+    left = margin + Math.random() * Math.max(1, maxLeft - margin);
+    top = margin + Math.random() * Math.max(1, maxTop - margin);
 
-  // Add a little randomness so it doesn't follow a predictable path.
-  const angle = (Math.random() - 0.5) * 0.8;
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
-  const nx = dx * cos - dy * sin;
-  const ny = dx * sin + dy * cos;
+    const centerX = left + buttonWidth / 2;
+    const centerY = top + buttonHeight / 2;
+    distance = Math.hypot(centerX - mouseX, centerY - mouseY);
+    tries++;
+  } while (distance < 180 && tries < 100);
 
-  // Move a substantial distance away, so it visibly "runs".
-  const jump = 180 + Math.random() * 120;
-
-  let left = bx + nx * jump - btn.width / 2;
-  let top = by + ny * jump - btn.height / 2;
-
-  // Keep it fully visible on screen.
-  left = Math.max(padding, Math.min(vw - btn.width - padding, left));
-  top = Math.max(padding, Math.min(vh - btn.height - padding, top));
-
+  // FIXED means it stays visible in the browser viewport.
   noBtn.style.position = "fixed";
   noBtn.style.left = `${left}px`;
   noBtn.style.top = `${top}px`;
-  noBtn.style.zIndex = "9999";
-  noBtn.style.transition = "left .18s cubic-bezier(.2,.8,.2,1), top .18s cubic-bezier(.2,.8,.2,1), transform .18s ease";
-  noBtn.style.transform = `rotate(${(Math.random() - 0.5) * 12}deg)`;
+  noBtn.style.right = "auto";
+  noBtn.style.bottom = "auto";
+  noBtn.style.margin = "0";
+  noBtn.style.zIndex = "99999";
+  noBtn.style.transform =
+    `rotate(${(Math.random() - 0.5) * 14}deg) scale(1.02)`;
 
   const messages = [
     "ih, quase! 😭",
-    "não vai conseguir não KKKK",
+    "não vai conseguir KKKK",
     "FOI POR POUCO 👀",
-    "ele tá fugindo de você!",
-    "para de tentar o NÃO 😭",
-    "não adianta correr atrás ♡"
+    "ele fugiu!",
+    "para de perseguir o NÃO 😭",
+    "desiste, eu sou mais rápido ♡",
+    "NÃO É PRA CLICAR NO NÃO KKKK"
   ];
-  hint.textContent = messages[Math.min(tries - 1, messages.length - 1)];
 
-  // After a short pause, allow another chase.
-  fleeing = true;
-  setTimeout(() => fleeing = false, 120);
+  hint.textContent = messages[Math.min(attempts - 1, messages.length - 1)];
+
+  moving = true;
+  setTimeout(() => {
+    moving = false;
+  }, 220);
 }
 
-// mouseenter fires before the cursor can click the button.
-noBtn.addEventListener("mouseenter", moveAwayFromPointer);
+// The first approach makes it run.
+noBtn.addEventListener("mouseenter", runAway);
 
-// Also protect touch/click attempts.
-noBtn.addEventListener("pointerdown", (event) => {
-  event.preventDefault();
-  moveAwayFromPointer(event);
-});
-
-// If the cursor gets very close after the first move, run again.
+// If the cursor follows it closely, make it run again.
 document.addEventListener("mousemove", (event) => {
-  if (noBtn.style.position !== "fixed") return;
+  if (noBtn.style.position !== "fixed" || moving) return;
 
   const r = noBtn.getBoundingClientRect();
-  const cx = r.left + r.width / 2;
-  const cy = r.top + r.height / 2;
-  const d = Math.hypot(event.clientX - cx, event.clientY - cy);
+  const centerX = r.left + r.width / 2;
+  const centerY = r.top + r.height / 2;
 
-  if (d < 75 && !fleeing) {
-    moveAwayFromPointer(event);
+  if (Math.hypot(event.clientX - centerX, event.clientY - centerY) < 105) {
+    runAway(event);
   }
+});
+
+// Never allow a click/touch to land on it.
+noBtn.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  runAway(event);
 });
 
 yesBtn.addEventListener("click", () => {
@@ -107,7 +100,6 @@ function createHeart() {
   el.style.left = `${Math.random() * 100}vw`;
   el.style.bottom = "-30px";
   el.style.fontSize = `${16 + Math.random() * 25}px`;
-  el.style.animationDuration = `${4.5 + Math.random() * 3}s`;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 8000);
 }
