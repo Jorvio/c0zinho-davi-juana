@@ -3,27 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cuzinho hoje? ♡</title>
+  <title>Cuzinho hoje?</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="page">
     <section class="card">
-      <div class="eyebrow">UMA PERGUNTINHA IMPORTANTE...</div>
+      <p class="eyebrow">UMA PERGUNTINHA IMPORTANTE...</p>
       <div class="heart">♡</div>
-      <h1>Cuzinho <span>hoje?</span></h1>
-      <p class="subtitle">responda com sinceridade.<br>eu prometo aceitar a resposta... talvez. ♡</p>
 
-      <div class="buttons">
-        <button id="yes" class="yes" type="button">SIM <span>♡</span></button>
+      <h1>Cuzinho</h1>
+      <div class="today">hoje?</div>
+
+      <p class="description">
+        responda com sinceridade.<br>
+        eu prometo aceitar a resposta... talvez. ♡
+      </p>
+
+      <div class="buttons-area">
+        <div class="buttons">
+          <button id="yes" class="btn yes" type="button">SIM <span>♡</span></button>
+          <span class="no-slot" aria-hidden="true"></span>
+        </div>
       </div>
 
-      <div class="hint" id="hint">escolha com carinho ♡</div>
+      <p class="hint">escolha com carinho ♡</p>
     </section>
   </main>
 
-  <!-- Fica FORA do card de propósito: evita clipping/containing block do backdrop-filter. -->
-  <button id="no" class="no runaway-no" type="button" aria-label="Não">NÃO</button>
+  <button id="no" class="btn no runaway-no" type="button">NÃO</button>
 
   <script src="script.js"></script>
 </body>

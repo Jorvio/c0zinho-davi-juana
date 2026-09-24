@@ -1,39 +1,43 @@
 const noButton = document.getElementById('no');
-const buttons = document.querySelector('.buttons');
 const yesButton = document.getElementById('yes');
 
 let fleeing = false;
 let timer = null;
+const GAP = 18;
+const MARGIN = 24;
+const TRIGGER_DISTANCE = 110;
 
-function placeNoBesideYes() {
-  // Volta o NÃO para o fluxo normal e deixa os dois botões centralizados como no print.
-  noButton.classList.remove('runaway', 'is-hidden');
-  noButton.style.left = '';
-  noButton.style.top = '';
-  noButton.style.transform = '';
+function positionNoBesideYes() {
+  if (!noButton || !yesButton) return;
+
+  noButton.classList.remove('is-hidden');
+  noButton.style.opacity = '1';
+  noButton.style.position = 'fixed';
+  noButton.style.transform = 'none';
+
+  const yes = yesButton.getBoundingClientRect();
+  const no = noButton.getBoundingClientRect();
+
+  // O espaço reservado pelo .no-slot faz o conjunto dos dois botões
+  // ficar centralizado. O botão real é colocado exatamente sobre esse slot.
+  noButton.style.left = `${yes.right + GAP}px`;
+  noButton.style.top = `${yes.top + (yes.height - no.height) / 2}px`;
 }
 
 function randomPositionAwayFromPointer(mouseX, mouseY) {
   const rect = noButton.getBoundingClientRect();
-  const margin = 28;
-  const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
-  const maxY = Math.max(margin, window.innerHeight - rect.height - margin);
+  const maxX = Math.max(MARGIN, window.innerWidth - rect.width - MARGIN);
+  const maxY = Math.max(MARGIN, window.innerHeight - rect.height - MARGIN);
 
-  // Tenta vários pontos e escolhe um que fique bem longe do cursor.
-  let best = null;
-  let bestDistance = -1;
+  let best = { x: MARGIN, y: MARGIN, distance: -1 };
 
-  for (let i = 0; i < 120; i++) {
-    const x = margin + Math.random() * (maxX - margin);
-    const y = margin + Math.random() * (maxY - margin);
+  for (let i = 0; i < 160; i++) {
+    const x = MARGIN + Math.random() * Math.max(1, maxX - MARGIN);
+    const y = MARGIN + Math.random() * Math.max(1, maxY - MARGIN);
     const cx = x + rect.width / 2;
     const cy = y + rect.height / 2;
     const distance = Math.hypot(cx - mouseX, cy - mouseY);
-
-    if (distance > bestDistance) {
-      bestDistance = distance;
-      best = { x, y };
-    }
+    if (distance > best.distance) best = { x, y, distance };
   }
 
   return best;
@@ -42,22 +46,19 @@ function randomPositionAwayFromPointer(mouseX, mouseY) {
 function flee(mouseX, mouseY) {
   if (fleeing) return;
   fleeing = true;
-
-  // Primeiro some de verdade.
-  noButton.classList.add('runaway', 'is-hidden');
+  noButton.classList.add('is-hidden');
+  noButton.dataset.moved = 'true';
 
   clearTimeout(timer);
   timer = setTimeout(() => {
-    const position = randomPositionAwayFromPointer(mouseX, mouseY);
-
-    noButton.style.left = `${position.x}px`;
-    noButton.style.top = `${position.y}px`;
+    const pos = randomPositionAwayFromPointer(mouseX, mouseY);
+    noButton.style.left = `${pos.x}px`;
+    noButton.style.top = `${pos.y}px`;
     noButton.style.transform = 'none';
     noButton.classList.remove('is-hidden');
-
-    // Depois de reaparecer, volta a poder fugir normalmente.
+    noButton.style.opacity = '1';
     fleeing = false;
-  }, 180);
+  }, 140);
 }
 
 document.addEventListener('pointermove', (event) => {
@@ -68,17 +69,15 @@ document.addEventListener('pointermove', (event) => {
   const centerY = rect.top + rect.height / 2;
   const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
 
-  // Área de fuga generosa: a pessoa não precisa encostar no botão.
-  if (distance < 105) {
+  if (distance <= TRIGGER_DISTANCE) {
     flee(event.clientX, event.clientY);
   }
-});
+}, { passive: true });
 
 window.addEventListener('resize', () => {
-  if (!noButton.classList.contains('runaway')) {
-    placeNoBesideYes();
-  }
+  // O NÃO só volta para o conjunto centralizado se ainda estiver no lugar inicial.
+  if (!noButton.dataset.moved) positionNoBesideYes();
 });
 
-// Garante a posição inicial exatamente no conjunto centralizado.
-placeNoBesideYes();
+window.addEventListener('load', positionNoBesideYes);
+requestAnimationFrame(positionNoBesideYes);

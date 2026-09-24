@@ -86,12 +86,19 @@ h1 {
 /* O conjunto dos dois botões fica SEMPRE centralizado */
 .buttons {
   position: relative;
-  width: 260px;
+  width: 262px;
   height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 18px;
+}
+
+/* Reserva exatamente o espaço do NÃO. Assim o conjunto SIM + NÃO fica centralizado. */
+.no-slot {
+  width: 122px;
+  height: 48px;
+  flex: 0 0 122px;
 }
 
 .btn {
@@ -133,11 +140,12 @@ h1 {
 }
 
 /* O NÃO vira fixed somente quando fugir, para poder reaparecer em qualquer ponto da tela. */
-.no.runaway {
-  position: fixed;
-  z-index: 99999;
-  margin: 0;
-  transition: none;
+.runaway-no {
+  position: fixed !important;
+  z-index: 99999 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .08s ease;
 }
 
 .no.is-hidden {
@@ -154,8 +162,9 @@ h1 {
     padding: 48px 24px 34px;
     border-radius: 28px;
   }
-  .buttons { width: 260px; gap: 12px; }
+  .buttons { width: 252px; gap: 12px; }
   .btn { width: 118px; }
+  .no-slot { width: 118px; flex-basis: 118px; }
   h1 { font-size: 66px; }
   .today { font-size: 42px; }
 }
