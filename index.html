@@ -1,1 +1,30 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>uma perguntinha ♡</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head><body><main class="page"><section class="card" id="card"><div class="label">uma perguntinha importante...</div><div class="heart">♡</div><h1>Cuzinho<br><span>hoje?</span></h1><p class="sub">responda com sinceridade.<br>eu prometo aceitar a resposta... talvez. ♡</p><div class="buttons"><button class="yes" id="yes">SIM ♡</button><button class="no" id="no">NÃO</button></div><p class="hint" id="hint">escolha com cuidado...</p><div class="success" id="success"><div class="big">♥</div><h2>eu sabia. ♡</h2><p>então está combinado.</p><span>agora não vale voltar atrás 😌</span></div></section></main><script src="script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuzinho hoje? ♡</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <div class="eyebrow">UMA PERGUNTINHA IMPORTANTE...</div>
+      <div class="heart">♡</div>
+      <h1>Cuzinho <span>hoje?</span></h1>
+      <p class="subtitle">responda com sinceridade.<br>eu prometo aceitar a resposta... talvez. ♡</p>
+
+      <div class="buttons">
+        <button id="yes" class="yes" type="button">SIM <span>♡</span></button>
+      </div>
+
+      <div class="hint" id="hint">escolha com carinho ♡</div>
+    </section>
+  </main>
+
+  <!-- Fica FORA do card de propósito: evita clipping/containing block do backdrop-filter. -->
+  <button id="no" class="no runaway-no" type="button" aria-label="Não">NÃO</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
