@@ -138,7 +138,7 @@ button {
   position: fixed !important;
   left: 50vw;
   top: 50vh;
-  transform: translate(-50%, -50%);
+  transform: none;
   z-index: 2147483647 !important;
 
   pointer-events: none !important;

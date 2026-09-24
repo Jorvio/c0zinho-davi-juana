@@ -1,5 +1,5 @@
 # Cuzinho hoje? ♡
 
-O botão NÃO agora funciona de forma simples: quando o cursor chega perto, ele desaparece por um instante e reaparece em uma posição aleatória longe do cursor.
+Ajuste visual: o botão NÃO agora fica corretamente ao lado do SIM no carregamento inicial, sem sobreposição.
 
-Substitua `index.html`, `style.css` e `script.js` no GitHub e faça commit/push.
+O comportamento de sumir e reaparecer em outro ponto da tela foi mantido.
