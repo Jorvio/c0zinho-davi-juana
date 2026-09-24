@@ -61,6 +61,21 @@ function flee(mouseX, mouseY) {
   }, 140);
 }
 
+
+if (yesButton) {
+  yesButton.addEventListener('click', () => {
+    const card = document.querySelector('.card');
+    if (!card) return;
+
+    card.innerHTML = `
+      <p class="eyebrow">RESPOSTA CONFIRMADA ♡</p>
+      <div class="heart">♡</div>
+      <h1 class="confirmed-title">Confirmado!</h1>
+      <div class="confirmed-subtitle">cuzinho hoje então 😏</div>
+    `;
+  });
+}
+
 document.addEventListener('pointermove', (event) => {
   if (fleeing) return;
 
